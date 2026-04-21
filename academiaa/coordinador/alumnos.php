@@ -6,22 +6,53 @@ requerir_rol('coordinador');
 $mensaje = '';
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['actualizar'])) {
-    $id = mysqli_real_escape_string($conexion, $_POST['id']);
-    $nombre = mysqli_real_escape_string($conexion, $_POST['nombre']);
+    $id       = mysqli_real_escape_string($conexion, $_POST['id']);
+    $nombre   = mysqli_real_escape_string($conexion, $_POST['nombre']);
     $apellido = mysqli_real_escape_string($conexion, $_POST['apellido']);
-    $email = mysqli_real_escape_string($conexion, $_POST['email']);
+    $email    = mysqli_real_escape_string($conexion, $_POST['email']);
     $telefono = mysqli_real_escape_string($conexion, $_POST['telefono']);
+    $grupo_id = mysqli_real_escape_string($conexion, $_POST['grupo_id']);
 
     $sql = "UPDATE estudiantes SET nombre='$nombre', apellido='$apellido', email='$email', telefono='$telefono'
             WHERE id='$id' AND tipo='alumno'";
+    //acctualiza los datos del alumno; el filtro AND TIPO ALUMNO evita modificar otros roles por error
     if (mysqli_query($conexion, $sql)) {
         $mensaje = "Alumno actualizado";
     } else {
         $mensaje = "Error al actualizar";
     }
+
+    //ccomprueba si el alumno ya tiene un grupo asignado
+    $existe = mysqli_fetch_assoc(mysqli_query($conexion, "SELECT id FROM alumno_grupo WHERE alumno_id = '$id'"));
+    if ($grupo_id !== '' && $grupo_id !== '0') {
+        if ($existe) {
+            //cambia el grupo del alumno al nuevo seleccionado
+            mysqli_query($conexion, "UPDATE alumno_grupo SET grupo_id = '$grupo_id' WHERE alumno_id = '$id'");
+        } else {
+            //asigna el alumno al grupo por primera vez
+            mysqli_query($conexion, "INSERT INTO alumno_grupo (alumno_id, grupo_id) VALUES ('$id', '$grupo_id')");
+        }
+    } else {
+        //si se eligió sin grupo, elimina la asignación actual
+        mysqli_query($conexion, "DELETE FROM alumno_grupo WHERE alumno_id = '$id'");
+    }
 }
 
-$alumnos = mysqli_query($conexion, "SELECT * FROM estudiantes WHERE tipo = 'alumno' ORDER BY apellido ASC");
+//obtiene todos los alumnos con su grupo actual (LEFT JOIN para mostrar también los sin grupo)
+$alumnos = mysqli_query($conexion, "
+    SELECT e.*, ag.grupo_id AS grupo_actual
+    FROM estudiantes e
+    LEFT JOIN alumno_grupo ag ON e.id = ag.alumno_id
+    WHERE e.tipo = 'alumno'
+    ORDER BY e.apellido ASC
+");
+
+//obbtiene todos los grupos para poblar el selector de cada fila
+$grupos = mysqli_query($conexion, "SELECT * FROM grupos ORDER BY nombre ASC");
+$lista_grupos = [];
+while ($g = mysqli_fetch_assoc($grupos)) {
+    $lista_grupos[] = $g;
+}
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -70,29 +101,44 @@ $alumnos = mysqli_query($conexion, "SELECT * FROM estudiantes WHERE tipo = 'alum
       <?php endif; ?>
 
       <table class="tabla-lista" style="margin-top: 10px;">
-        <tr>
-          <th>Nombre</th>
-          <th>Apellido</th>
-          <th>Email</th>
-          <th>Telefono</th>
-          <th>Acciones</th>
-        </tr>
+        <thead>
+          <tr>
+            <th>Nombre</th>
+            <th>Apellido</th>
+            <th>Email</th>
+            <th>Telefono</th>
+            <th>Grupo</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
         <?php while ($a = mysqli_fetch_assoc($alumnos)): ?>
+        <?php $fid = 'fa' . $a['id']; ?>
         <tr>
-          <form method="POST">
-            <input type="hidden" name="id" value="<?php echo $a['id']; ?>">
-            <td><input type="text" name="nombre" value="<?php echo $a['nombre']; ?>" style="width:110px; padding:5px;"></td>
-            <td><input type="text" name="apellido" value="<?php echo $a['apellido']; ?>" style="width:110px; padding:5px;"></td>
-            <td><input type="text" name="email" value="<?php echo $a['email']; ?>" style="width:160px; padding:5px;"></td>
-            <td><input type="text" name="telefono" value="<?php echo $a['telefono']; ?>" style="width:110px; padding:5px;"></td>
-            <td>
-              <button type="submit" name="actualizar" class="boton" style="padding:5px 10px; margin:0;">
-                <span class="material-symbols-outlined icono">save</span>
-              </button>
-            </td>
-          </form>
+          <form id="<?php echo $fid; ?>" method="POST"></form>
+          <input form="<?php echo $fid; ?>" type="hidden" name="id" value="<?php echo $a['id']; ?>">
+          <td><input form="<?php echo $fid; ?>" type="text" name="nombre" value="<?php echo htmlspecialchars($a['nombre']); ?>" style="width:110px; padding:5px;"></td>
+          <td><input form="<?php echo $fid; ?>" type="text" name="apellido" value="<?php echo htmlspecialchars($a['apellido']); ?>" style="width:110px; padding:5px;"></td>
+          <td><input form="<?php echo $fid; ?>" type="email" name="email" value="<?php echo htmlspecialchars($a['email']); ?>" style="width:150px; padding:5px;"></td>
+          <td><input form="<?php echo $fid; ?>" type="text" name="telefono" value="<?php echo htmlspecialchars($a['telefono']); ?>" style="width:100px; padding:5px;"></td>
+          <td>
+            <select form="<?php echo $fid; ?>" name="grupo_id" style="padding:5px;">
+              <option value="0">Sin grupo</option>
+              <?php foreach ($lista_grupos as $g): ?>
+                <option value="<?php echo $g['id']; ?>" <?php if ($a['grupo_actual'] == $g['id']) echo 'selected'; ?>>
+                  <?php echo htmlspecialchars($g['nombre']); ?>
+                </option>
+              <?php endforeach; ?>
+            </select>
+          </td>
+          <td>
+            <button form="<?php echo $fid; ?>" type="submit" name="actualizar" value="1" class="boton" style="padding:5px 10px; margin:0;">
+              <span class="material-symbols-outlined icono">save</span>
+            </button>
+          </td>
         </tr>
         <?php endwhile; ?>
+        </tbody>
       </table>
     </div>
   </main>

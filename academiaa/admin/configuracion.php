@@ -16,6 +16,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['nuevo'])) {
 
     $sql = "INSERT INTO estudiantes (nombre, apellido, email, telefono, usuario, contrasena, tipo)
             VALUES ('$nombre', '$apellido', '$email', '$telefono', '$usuario', '$contrasena', '$tipo')";
+    //inserta el nuevo usuario con todos sus datos y el rol seleccionado
     if (mysqli_query($conexion, $sql)) {
         $mensaje = "Usuario registrado";
     } else {
@@ -54,6 +55,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['actualizar_usuario']))
                 WHERE id = '$id'";
     }
 
+    //updetea todos los datos del usuario; si se envió contraseña nueva la incluye, si no la omite
     if (mysqli_query($conexion, $sql)) {
         $mensaje = "Usuario actualizado";
     } else {
@@ -61,7 +63,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['actualizar_usuario']))
     }
 }
 
-if (isset($_GET['eliminar'])) {
+if (isset($_GET['eliminar'])) { //elimina todo lo que tenga el estudiante antes de eliminarlo
     $id = mysqli_real_escape_string($conexion, $_GET['eliminar']);
     mysqli_query($conexion, "DELETE FROM calificaciones WHERE estudiante_id = $id");
     mysqli_query($conexion, "DELETE FROM alumno_grupo WHERE alumno_id = $id");
@@ -71,6 +73,7 @@ if (isset($_GET['eliminar'])) {
     exit;
 }
 
+//regresa todos los usuarios ordenados primero por rol y luego por apellido
 $usuarios = mysqli_query($conexion, "SELECT * FROM estudiantes ORDER BY tipo, apellido ASC");
 ?>
 <!DOCTYPE html>

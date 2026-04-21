@@ -15,6 +15,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['nueva_calif'])) {
         $sql = "INSERT INTO calificaciones (estudiante_id, materia_id, calificacion)
                 VALUES ('$estudiante_id', '$materia_id', '$calificacion')";
 
+        // Registra una nueva calificación para el estudiante en la materia seleccionada
         if (mysqli_query($conexion, $sql)) {
             $mensaje = "Calificación registrada con éxito";
         } else {
@@ -25,6 +26,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['nueva_calif'])) {
     }
 }
 
+// Obtiene los alumnos que pertenecen a los grupos donde el profesor tiene materias asignadas
 $estudiantes = mysqli_query($conexion, "SELECT DISTINCT e.id, e.nombre, e.apellido
   FROM estudiantes e
   INNER JOIN alumno_grupo ag ON e.id = ag.alumno_id
@@ -32,18 +34,19 @@ $estudiantes = mysqli_query($conexion, "SELECT DISTINCT e.id, e.nombre, e.apelli
   WHERE e.tipo = 'alumno' AND pgm.profesor_id = '$profesor_id'
   ORDER BY e.apellido ASC");
 
+// Obtiene solo las materias que el profesor tiene asignadas (sin duplicados)
 $materias = mysqli_query($conexion, "SELECT DISTINCT m.id, m.nombre
   FROM materias m
   INNER JOIN profesor_grupo_materia pgm ON m.id = pgm.materia_id
   WHERE pgm.profesor_id = '$profesor_id'
   ORDER BY m.nombre ASC");
 
+// Obtiene todas las calificaciones registradas en las materias del profesor, sin requerir que el alumno esté en el grupo (el JOIN de alumno_grupo excluía calificaciones válidas)
 $calificaciones = mysqli_query($conexion, "SELECT c.id, e.nombre, e.apellido, m.nombre AS materia, c.calificacion
   FROM calificaciones c
   INNER JOIN estudiantes e ON c.estudiante_id = e.id
   INNER JOIN materias m ON c.materia_id = m.id
   INNER JOIN profesor_grupo_materia pgm ON pgm.materia_id = m.id
-  INNER JOIN alumno_grupo ag ON ag.alumno_id = e.id AND ag.grupo_id = pgm.grupo_id
   WHERE pgm.profesor_id = '$profesor_id'
   GROUP BY c.id
   ORDER BY c.id DESC");

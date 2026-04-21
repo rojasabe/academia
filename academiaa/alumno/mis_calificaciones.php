@@ -4,6 +4,7 @@ include '../db/conexion.php';
 requerir_rol('alumno');
 
 $id = $_SESSION['usuario_id'];
+//obtiene calificaiones con la materia y el nombre del estudiante que está con esa sesion
 $calificaciones = mysqli_query($conexion, "SELECT m.nombre AS materia, c.calificacion
   FROM calificaciones c
   INNER JOIN materias m ON c.materia_id = m.id

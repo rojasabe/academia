@@ -7,12 +7,15 @@ $mensaje = '';
 
 if (isset($_GET['baja'])) {
     $id = mysqli_real_escape_string($conexion, $_GET['baja']);
+    //deletea las asignaciones de grupo y materia del profesor antes de darlo de baja
     mysqli_query($conexion, "DELETE FROM profesor_grupo_materia WHERE profesor_id = $id");
+    //deletea el registro profesor y el filtro AND tipo profesor evita el borrar otros roles por error
     mysqli_query($conexion, "DELETE FROM estudiantes WHERE id = $id AND tipo = 'profesor'");
     header("Location: profesores.php");
     exit;
 }
 
+//profesores organizados por apellido
 $profesores = mysqli_query($conexion, "SELECT * FROM estudiantes WHERE tipo = 'profesor' ORDER BY apellido ASC");
 ?>
 <!DOCTYPE html>

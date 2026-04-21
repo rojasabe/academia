@@ -11,6 +11,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $creditos = mysqli_real_escape_string($conexion, $_POST['creditos']);
 
     $query = "INSERT INTO materias (nombre, creditos) VALUES ('$nombre', '$creditos')";
+    //inserta materia con creditos
     if (mysqli_query($conexion, $query)) {
         $mensaje = "Materia registrada";
     } else {
@@ -20,6 +21,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
 if ($tipo == 'profesor') {
     $profesor_id = (int) $_SESSION['usuario_id'];
+    //regresa materias asignadas por profe, evitando duplicaods con join con profesor_grupo_materia
     $materias = mysqli_query($conexion, "
         SELECT DISTINCT m.*
         FROM materias m
@@ -28,6 +30,7 @@ if ($tipo == 'profesor') {
         ORDER BY m.nombre ASC
     ");
 } else {
+    //regresa todas las materias registradas que pueden ver admin y coordinador
     $materias = mysqli_query($conexion, "SELECT * FROM materias ORDER BY nombre ASC");
 }
 ?>

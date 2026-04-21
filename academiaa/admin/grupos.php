@@ -8,6 +8,7 @@ $mensaje = '';
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['nuevo'])) {
     $nombre = mysqli_real_escape_string($conexion, $_POST['nombre']);
     $sql = "INSERT INTO grupos (nombre) VALUES ('$nombre')";
+    //crea grupo con el nombre indicado en el post nombre
     if (mysqli_query($conexion, $sql)) {
         $mensaje = "Grupo registrado";
     } else {
@@ -19,6 +20,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['asignar_alumno'])) {
     $alumno_id = mysqli_real_escape_string($conexion, $_POST['alumno_id']);
     $grupo_id = mysqli_real_escape_string($conexion, $_POST['grupo_id']);
     $sql = "INSERT INTO alumno_grupo (alumno_id, grupo_id) VALUES ('$alumno_id', '$grupo_id')";
+    //asigna al alumno a un grupo seleccionado en alumno_id y grupo_id
     if (mysqli_query($conexion, $sql)) {
         $mensaje = "Alumno asignado al grupo";
     } else {
@@ -28,8 +30,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['asignar_alumno'])) {
 
 if (isset($_GET['eliminar'])) {
     $id = mysqli_real_escape_string($conexion, $_GET['eliminar']);
+    //al eliminar desvincula los alumnos del grupo antes de eliminarlo
     mysqli_query($conexion, "DELETE FROM alumno_grupo WHERE grupo_id = $id");
+    //tambien profesores y materias
     mysqli_query($conexion, "DELETE FROM profesor_grupo_materia WHERE grupo_id = $id");
+    //y de la tabla principal
     mysqli_query($conexion, "DELETE FROM grupos WHERE id = $id");
     header("Location: grupos.php");
     exit;
@@ -39,6 +44,7 @@ $grupos = mysqli_query($conexion, "SELECT * FROM grupos ORDER BY nombre ASC");
 $alumnos = mysqli_query($conexion, "SELECT id, nombre, apellido FROM estudiantes WHERE tipo = 'alumno' ORDER BY apellido ASC");
 $grupos_sel = mysqli_query($conexion, "SELECT * FROM grupos ORDER BY nombre ASC");
 
+//obtiene todos los alumnos con su grupo asignado, uniendo alumno_grupo con estudiantes y grupos
 $asignaciones = mysqli_query($conexion, "SELECT ag.id, e.nombre, e.apellido, g.nombre AS grupo
   FROM alumno_grupo ag
   INNER JOIN estudiantes e ON ag.alumno_id = e.id

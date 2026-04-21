@@ -15,6 +15,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $sql = "INSERT INTO estudiantes (nombre, apellido, email, telefono, usuario, contrasena, tipo)
             VALUES ('$nombre', '$apellido', '$email', '$telefono', '$usuario', '$contrasena', 'alumno')";
 
+    //inserta rol fijo alumno
     if (mysqli_query($conexion, $sql)) {
         $mensaje = "Estudiante registrado";
     } else {

@@ -11,6 +11,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $usuario = $_POST['usuario'];
     $password = $_POST['password'];
 
+    // Busca al usuario que coincida con el nombre de usuario y contraseña ingresados para autenticar el login
     $resultado = mysqli_query($conexion, "SELECT * FROM estudiantes WHERE usuario = '$usuario' AND contrasena = '$password'");
 
     if (mysqli_num_rows($resultado) > 0) {

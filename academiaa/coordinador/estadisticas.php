@@ -3,17 +3,20 @@ include '../db/sesion.php';
 include '../db/conexion.php';
 requerir_rol('coordinador');
 
+//nos da el promedio de calificaciones de todos los alumnos pero por grupo
 $prom_grupo = mysqli_query($conexion, "SELECT g.nombre AS grupo, AVG(c.calificacion) AS promedio
   FROM calificaciones c
   INNER JOIN alumno_grupo ag ON c.estudiante_id = ag.alumno_id
   INNER JOIN grupos g ON ag.grupo_id = g.id
   GROUP BY g.id ORDER BY g.nombre ASC");
 
+//calcula promedio de calif agrupado por materia
 $prom_materia = mysqli_query($conexion, "SELECT m.nombre AS materia, AVG(c.calificacion) AS promedio
   FROM calificaciones c
   INNER JOIN materias m ON c.materia_id = m.id
   GROUP BY m.id ORDER BY m.nombre ASC");
 
+//regresa profesores q no tienen calificacion regisrada en materias asignadas
 $sin_subir = mysqli_query($conexion, "SELECT e.id, e.nombre, e.apellido
   FROM estudiantes e
   WHERE e.tipo = 'profesor'

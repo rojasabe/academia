@@ -10,6 +10,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['actualizar_nota'])) {
     $id_reg = mysqli_real_escape_string($conexion, $_POST['id_calificacion']);
     $nueva_nota = mysqli_real_escape_string($conexion, $_POST['nota']);
 
+    //updetea la calificacion de un registro especifico por su id
     $sql_update = "UPDATE calificaciones SET calificacion = '$nueva_nota' WHERE id = '$id_reg'";
     if (mysqli_query($conexion, $sql_update)) {
         $mensaje = "Calificación guardada correctamente.";
@@ -17,13 +18,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['actualizar_nota'])) {
         $mensaje = "Error al guardar: " . mysqli_error($conexion);
     }
 }
-
+//requiere todas las calificaciones registradas en las materias del profesor, sin requerir que el alumno esté en el grupo (el JOIN de alumno_grupo excluía calificaciones válidas)
 $query = "SELECT c.id as calif_id, e.nombre, e.apellido, m.nombre as nombre_materia, c.calificacion
           FROM calificaciones c
           JOIN estudiantes e ON c.estudiante_id = e.id
           JOIN materias m ON c.materia_id = m.id
           JOIN profesor_grupo_materia pgm ON pgm.materia_id = m.id
-          JOIN alumno_grupo ag ON ag.alumno_id = e.id AND ag.grupo_id = pgm.grupo_id
           WHERE pgm.profesor_id = '$profesor_id'
           GROUP BY c.id
           ORDER BY e.apellido ASC";
@@ -81,7 +81,7 @@ $resultado = mysqli_query($conexion, $query);
             <form method="POST">
               <td>
                 <input type="hidden" name="id_calificacion" value="<?php echo $row['calif_id']; ?>">
-                <input type="number" name="nota" value="<?php echo $row['calificacion']; ?>" step="0.1" min="0" max="10" style="width: 60px; padding: 5px; text-align: center;">
+                <input type="number" name="nota" value="<?php echo $row['calificacion']; ?>" step="0.1" min="0" max="100" style="width: 75px; padding: 5px; text-align: center;">
               </td>
               <td>
                 <button type="submit" name="actualizar_nota" class="boton" style="padding: 5px 10px;">

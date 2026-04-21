@@ -9,7 +9,9 @@ $total_materias = mysqli_fetch_assoc(mysqli_query($conexion, "SELECT COUNT(*) AS
 $total_grupos = mysqli_fetch_assoc(mysqli_query($conexion, "SELECT COUNT(*) AS t FROM grupos"))['t'];
 $total_calif = mysqli_fetch_assoc(mysqli_query($conexion, "SELECT COUNT(*) AS t FROM calificaciones"))['t'];
 $promedio = mysqli_fetch_assoc(mysqli_query($conexion, "SELECT AVG(calificacion) AS p FROM calificaciones"))['p'];
+//todas son consultas para saber totales para las estadísticas, con select count o avg para totales o promedios
 
+//calcula promedios por materia 
 $prom_materia = mysqli_query($conexion, "SELECT m.nombre, AVG(c.calificacion) AS promedio
   FROM calificaciones c INNER JOIN materias m ON c.materia_id = m.id
   GROUP BY m.id ORDER BY m.nombre ASC");

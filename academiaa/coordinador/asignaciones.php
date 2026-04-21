@@ -12,6 +12,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['asignar'])) {
 
     $sql = "INSERT INTO profesor_grupo_materia (profesor_id, grupo_id, materia_id)
             VALUES ('$profesor_id', '$grupo_id', '$materia_id')";
+    //vincula al profesor co materia
     if (mysqli_query($conexion, $sql)) {
         $mensaje = "Materia asignada al profesor";
     } else {
@@ -21,15 +22,20 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['asignar'])) {
 
 if (isset($_GET['quitar'])) {
     $id = mysqli_real_escape_string($conexion, $_GET['quitar']);
+    //deletea asignacion de profesor-grupo-materia por id
     mysqli_query($conexion, "DELETE FROM profesor_grupo_materia WHERE id = $id");
     header("Location: asignaciones.php");
     exit;
 }
 
+//lista de profesores para el formulario
 $profesores = mysqli_query($conexion, "SELECT id, nombre, apellido FROM estudiantes WHERE tipo = 'profesor' ORDER BY apellido ASC");
+//lista de grupos para el formuarrio
 $grupos = mysqli_query($conexion, "SELECT * FROM grupos ORDER BY nombre ASC");
+//materias para el selector del fomrulario
 $materias = mysqli_query($conexion, "SELECT * FROM materias ORDER BY nombre ASC");
 
+//asignaciones del profe, con nombre grupo y materia
 $asignaciones = mysqli_query($conexion, "SELECT pgm.id, e.nombre, e.apellido, g.nombre AS grupo, m.nombre AS materia
   FROM profesor_grupo_materia pgm
   INNER JOIN estudiantes e ON pgm.profesor_id = e.id
