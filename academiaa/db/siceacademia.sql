@@ -1,6 +1,3 @@
-create database if not exists siceacademia;
-USE siceacademia;
-
 create table estudiantes (
     id INT auto_increment primary key,
     nombre varchar(100) NOT NULL,
